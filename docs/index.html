@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#171916">
+  <meta name="description" content="粘贴网易云歌单，随机抽一首，听倒放片段猜歌。">
+  <title>倒带 REWIND · 听倒放猜歌</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23e8ef87'/%3E%3Cpath d='M32 16 10 32l22 16V16zm22 0L32 32l22 16V16z' fill='%23171916'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar shell">
+    <a class="brand" href="./" aria-label="倒带首页"><span class="brand-icon">◀◀</span><strong>倒带<span>REWIND</span></strong></a>
+    <span class="top-caption">听倒放 · 猜歌名</span>
+    <button class="text-button" id="help-button"><span aria-hidden="true">ⓘ</span> 怎么玩</button>
+  </header>
+  <main class="shell">
+    <section class="intro">
+      <div><p class="eyebrow"><span class="live-dot"></span> A DIFFERENT WAY TO LISTEN</p><h1>熟悉的歌，<span>反着猜。</span></h1><p class="intro-copy">让旋律倒着走，让耳朵来破案。叫上朋友，看看谁先听出来。</p></div>
+      <div class="intro-mark" aria-hidden="true"><span>PRESS PLAY.</span><strong>THINK<br>BACKWARDS.</strong></div>
+    </section>
+    <div class="workspace">
+      <aside class="sidebar">
+        <section class="panel source-panel">
+          <div class="section-title"><h2><span>01</span> 准备歌单</h2><span class="small-tag">网易云音乐</span></div>
+          <form id="playlist-form">
+            <label class="field-label" for="playlist-input">歌单链接或分享文字</label>
+            <textarea id="playlist-input" rows="2" placeholder="粘贴网易云歌单链接…" maxlength="3000" spellcheck="false" required></textarea>
+            <button class="button primary wide" id="import-button" type="submit"><span>读取歌单</span><span aria-hidden="true">↗</span></button>
+          </form>
+          <p id="import-status" class="status-line" role="status">支持公开歌单、歌单 ID 与分享短链接</p>
+          <div class="loaded-list" id="loaded-list" hidden>
+            <div class="list-icon" aria-hidden="true">♫</div><div class="list-info"><strong id="list-name"></strong><span id="list-meta"></span></div>
+            <button class="icon-button" id="manage-button" aria-label="打开主持人歌单" title="主持人歌单">☷</button>
+          </div>
+          <div class="source-divider"><span>也可以</span></div>
+          <div class="source-options"><button class="button subtle" id="local-button"><span aria-hidden="true">＋</span> 本地音频</button><button class="button subtle" id="demo-button"><span aria-hidden="true">▷</span> 试试演示</button></div>
+          <input id="file-input" type="file" accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac,.opus,.webm" multiple hidden>
+          <p class="fineprint">在线歌曲受音源可用性限制。本地文件仅在你的浏览器中处理。</p>
+        </section>
+        <section class="panel settings-panel">
+          <div class="section-title"><h2><span>02</span> 游戏设置</h2><span class="settings-note">下首生效</span></div>
+          <label class="field-label" for="rounds-count">每局回合数 <span class="rounds-rule">答对一题得 1 分</span></label>
+          <select id="rounds-count"><option value="3">3 回合 · 热身</option><option value="5">5 回合 · 速战</option><option value="10" selected>10 回合 · 标准</option><option value="15">15 回合</option><option value="20">20 回合</option><option value="30">30 回合</option><option value="custom">自定义回合数</option></select>
+          <div id="custom-rounds-wrap" class="custom-rounds-wrap" hidden><label for="custom-rounds">自定义回合数</label><input id="custom-rounds" type="number" min="1" max="100" step="1" value="10"><span>1–100 回合</span></div>
+          <p id="rounds-note" class="rounds-note">开局前可修改，游戏中固定回合数。</p>
+          <fieldset><legend>倒放片段 <span>秒</span></legend><div class="segments" id="duration-options" role="group" aria-label="片段长度"><button data-seconds="5" aria-pressed="false">5</button><button data-seconds="10" aria-pressed="true" class="selected">10</button><button data-seconds="15" aria-pressed="false">15</button><button data-seconds="20" aria-pressed="false">20</button><button data-seconds="30" aria-pressed="false">30</button></div></fieldset>
+          <label class="field-label select-label" for="clip-mode">从哪里截取</label><select id="clip-mode"><option value="random">随机片段 · 更有挑战</option><option value="middle">歌曲中段</option><option value="intro">歌曲开头</option></select>
+          <div class="volume-row"><label for="volume"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 5-6 4H2v6h3l6 4V5ZM15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>音量</label><input id="volume" type="range" min="0" max="100" value="65"><output id="volume-value" for="volume">65%</output></div>
+          <div class="setting-foot"><span class="check-mark">✓</span> 随机抽取，本轮不重复</div>
+        </section>
+      </aside>
+      <section class="game-panel" aria-label="猜歌播放器">
+        <div class="game-top"><span class="player-label"><span class="live-dot"></span><span id="player-label">READY TO REWIND</span></span><span class="round-label" id="round-label">第 00 首</span></div>
+        <div class="record-area"><div class="record" id="record" aria-hidden="true"><div class="record-groove"></div><div class="record-center"><span class="record-mini">REWIND SIDE A</span><strong id="record-symbol">?</strong><span class="record-mini">33⅓ RPM · GUESS IT</span><i></i></div></div><span class="record-spark" aria-hidden="true">✳</span><span class="record-caption" id="record-caption">THE MYSTERY TRACK</span></div>
+        <div class="track-info" aria-live="polite"><p class="tiny-label" id="track-kicker">你的耳朵，准备好了吗？</p><h2 id="track-title">下一首，会是什么？</h2><p id="track-subtitle">先准备一张歌单，再按下倒带键。</p></div>
+        <div class="playback"><div class="waveform" id="waveform" aria-hidden="true"></div><div class="time-row"><span id="elapsed">00:00</span><span id="playback-mode">REVERSE AUDIO</span><span id="total-time">00:10</span></div></div>
+        <div class="main-control"><button id="play-button" class="play-button" disabled><span id="play-icon" aria-hidden="true">◀◀</span><span id="play-text">随机抽一首</span></button><button id="cancel-button" class="text-button" hidden>取消加载</button></div>
+        <div class="action-row"><button class="button player-secondary" id="replay-button" disabled><span aria-hidden="true">↺</span> 重播片段</button><button class="button reveal-button" id="reveal-button" disabled><span aria-hidden="true">◉</span> 揭晓答案</button><button class="button player-secondary" id="next-button" disabled>下一首 <span aria-hidden="true">→</span></button></div>
+        <div id="answer-actions" class="answer-actions" hidden><button class="text-button" id="forward-button">▷ 听原片段</button><div class="score-actions"><button id="correct-button">✓ 猜对了</button><button id="incorrect-button">没猜中</button></div><a id="song-link" target="_blank" rel="noopener noreferrer" hidden>网易云 ↗</a></div>
+        <div class="game-status" id="game-status" role="status">玩法很简单：听倒放 → 猜歌名 → 揭晓答案</div>
+        <div class="game-bottom"><span><kbd>Space</kbd> 播放 / 暂停 <span class="desktop-shortcut"><kbd>R</kbd> 揭晓 <kbd>N</kbd> 下一首</span></span><button id="fullscreen-button" class="text-button">⛶ 全屏</button></div>
+      </section>
+    </div>
+    <section class="session-bar" aria-label="本局进度"><div class="session-title"><span aria-hidden="true">◎</span><span>本局战绩<small>答对一题，收获一分</small></span></div><div class="stat"><strong id="drawn-stat">0</strong><span>已进行</span></div><div class="stat"><strong id="correct-stat">0</strong><span>总分</span></div><div class="stat"><strong id="remaining-stat">—</strong><span>剩余回合</span></div><div class="session-buttons"><button class="text-button" id="results-button" hidden>查看总分 ↗</button><button class="text-button" id="reset-button" disabled>↻ 开始新一局</button></div></section>
+  </main>
+  <footer class="shell footer"><span>倒带 <span class="footer-slash">/</span> 换个方向，重新认识一首歌。</span><span>MADE FOR GOOD LISTENERS <span aria-hidden="true">✳</span></span></footer>
+  <dialog id="help-dialog"><div class="dialog-top"><h2>倒过来，听听看。</h2><button class="icon-button" data-close aria-label="关闭">×</button></div><ol class="howto"><li><strong>准备歌单</strong><p>粘贴网易云公开歌单链接或分享文字，点击「读取歌单」。也可以选择本地音频，或试试三首合成演示旋律。</p></li><li><strong>随机抽歌</strong><p>选择片段长度和截取位置，点击「随机抽一首」。本轮不会抽到同一首歌；取不到音频的歌曲会跳过。</p></li><li><strong>听倒放，猜歌名</strong><p>倒放播放的是实际音频片段。重播始终播放本题的同一个片段，可以暂停继续。</p></li><li><strong>揭晓答案</strong><p>查看歌名和歌手，还可以正放同一片段作对照。自行记录是否猜对，再进入下一首。</p></li></ol><p class="dialog-note">仅尝试网易云当前提供的公开音源，无需账号。部分会员、下架或受地区限制的歌曲无法取得音频；支持按歌名、歌手或歌曲 ID 匹配本地音频。MP3、WAV 等格式取决于浏览器支持，NCM 加密文件不支持。关闭或刷新后需重新选择本地文件。</p><button class="button primary wide" data-close>开始听吧 ↗</button></dialog>
+  <dialog id="manage-dialog" class="manage-dialog"><div class="dialog-top"><div><p class="eyebrow">HOST VIEW</p><h2>主持人歌单</h2></div><button class="icon-button" data-close aria-label="关闭">×</button></div><p class="dialog-note">这里会显示歌名，建议暂停投屏后查看。可绑定本地音频或编辑本地歌曲的答案。</p><div class="manage-toolbar"><input type="search" id="track-search" placeholder="搜索歌名、歌手或 ID" aria-label="搜索歌单"><button id="bind-button" class="button subtle">绑定本地音频</button></div><p id="manage-count" class="fineprint"></p><div id="track-list" class="track-list"></div><p id="more-tracks" class="fineprint"></p></dialog>
+  <dialog id="results-dialog" class="results-dialog" aria-labelledby="results-title"><div class="dialog-top"><div><p class="eyebrow">THE FINAL SCORE</p><h2 id="results-title">本局结束</h2></div><button class="icon-button" data-close aria-label="关闭结算">×</button></div><p id="summary-note" class="dialog-note"></p><div class="final-score"><span>本局总分</span><div><strong id="summary-score">0</strong><span id="summary-max">/ 0 分</span></div></div><div class="summary-stats"><div><strong id="summary-correct">0</strong><span>答对</span></div><div><strong id="summary-incorrect">0</strong><span>没猜中</span></div><div><strong id="summary-unscored">0</strong><span>未标记</span></div><div><strong id="summary-accuracy">0%</strong><span>正确率</span></div></div><h3 class="results-subtitle">这一局，听过的歌</h3><div id="summary-tracks" class="summary-tracks"></div><p class="fineprint">每题答对得 1 分；没猜中或未标记得 0 分。音源加载失败不占回合。</p><div class="dialog-buttons"><button class="button subtle" data-close>回看最后一题</button><button class="button primary" id="results-new-game">再来一局 ↗</button></div></dialog>
+  <dialog id="reset-dialog"><div class="dialog-top"><h2>开始新一局？</h2><button class="icon-button" data-close aria-label="关闭">×</button></div><p class="dialog-note">保留这张歌单和本地音频，清空战绩并重新洗牌。新一局开始前可以修改回合数。</p><div class="dialog-buttons"><button class="button subtle" data-close>继续这局</button><button class="button primary" id="confirm-reset">重新洗牌</button></div></dialog>
+  <div class="toast" id="toast" role="status" hidden></div>
+  <noscript>请启用 JavaScript，以读取歌单并播放倒放音频。</noscript>
+</body>
+</html>

@@ -1,0 +1,13 @@
+import { readFile, writeFile, mkdir, copyFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
+const backendOrigin = 'https://rewind-guess-nov4.glass-peacock.chatgpt.site';
+const destination = resolve(root, 'docs');
+await mkdir(destination, { recursive: true });
+for (const name of ['index.html', 'style.css', 'app.js', 'core.js']) await copyFile(resolve(root, 'web', name), resolve(destination, name));
+await writeFile(resolve(destination, 'config.js'), 'export const API_ORIGIN = ' + JSON.stringify(backendOrigin) + ';\n');
+await writeFile(resolve(destination, '.nojekyll'), '');
+const html = await readFile(resolve(destination, 'index.html'), 'utf8');
+if (/\b(?:src|href)="\/(?!\/)/.test(html)) throw new Error('Pages assets must use relative paths');
+console.log('Built GitHub Pages frontend in docs/.');
