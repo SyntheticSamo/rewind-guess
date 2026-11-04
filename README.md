@@ -2,6 +2,8 @@
 
 导入网易云公开歌单，随机抽歌，将实际音频的一段倒过来播放，适合朋友聚会时共用屏幕猜歌。
 
+[在线试玩 · 倒带 REWIND](https://syntheticsamo.github.io/rewind-guess/)
+
 ## 开始使用
 
 Windows 双击 `start.cmd`。工具会启动本地服务并打开浏览器。保持终端窗口开启，按 Ctrl+C 停止服务。
